@@ -114,10 +114,67 @@ app.listen(port, '0.0.0.0', () => {
 // Funciones para trabajar con Excel
 // ---------------------
 
+// Función para inicializar la hoja de productos
+function inicializarHojaProductos() {
+    const filePath = 'pedidos.xlsx';
+    const productos = [
+        ['id_producto', 'producto', 'precio'],
+        [1, 'caipirinha 1 litro', 25000],
+        [2, 'caipirinha 2 litros', 50000],
+        [3, 'caipiruva 1 litro', 25000],
+        [4, 'caipiruva 2 litros', 50000],
+        [5, 'caipiboom 1 litro', 30000],
+        [6, 'caipiboom 2 litros', 60000]
+    ];
+    let workbook;
+    if (fs.existsSync(filePath)) {
+        workbook = xlsx.readFile(filePath);
+        if (workbook.Sheets['Productos']) {
+            console.log('✅ La hoja de productos ya existe en pedidos.xlsx');
+            return;
+        }
+    } else {
+        workbook = xlsx.utils.book_new();
+    }
+    const worksheet = xlsx.utils.aoa_to_sheet(productos);
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Productos');
+    xlsx.writeFile(workbook, filePath);
+    console.log('✅ Hoja de productos inicializada en pedidos.xlsx');
+}
+
+// Llamar a la función para inicializar la hoja de productos
+inicializarHojaProductos();
+
+// Función para obtener el precio del producto
+function obtenerPrecioProducto(producto, litros) {
+    const filePath = 'pedidos.xlsx';
+    if (!fs.existsSync(filePath)) {
+        console.error("El archivo de pedidos no existe");
+        return null;
+    }
+    const workbook = xlsx.readFile(filePath);
+    const worksheet = workbook.Sheets['Productos'];
+    const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+    const productoStr = `${producto.toLowerCase()} ${litros.toLowerCase()}`;
+    console.log(`Buscando precio para: ${productoStr}`); // Registro de depuración
+    const productoData = data.find(row => row[1].toLowerCase() === productoStr);
+    if (productoData) {
+        console.log(`Precio encontrado: ${productoData[2]}`); // Registro de depuración
+    } else {
+        console.error(`Producto no encontrado: ${productoStr}`); // Registro de depuración
+    }
+    return productoData ? productoData[2] : null;
+}
+
+// Función para formatear el precio
+function formatearPrecio(precio) {
+    return `Gs. ${precio.toLocaleString('es-ES')}`;
+}
+
 // Función para guardar un pedido nuevo en Excel
 function guardarPedidoEnExcel(pedido) {
     const filePath = 'pedidos.xlsx';
-    const HEADER = ['ID Pedido', 'Producto', 'Litros', 'Método de Pago', 'Nombre', 'Número de Cliente', 'Fecha Pedido', 'Estado', 'Fecha Preparación', 'Fecha Terminado', 'Usuario'];
+    const HEADER = ['ID Pedido', 'Producto', 'Litros', 'Método de Pago', 'Nombre', 'Número de Cliente', 'Fecha Pedido', 'Estado', 'Fecha Preparación', 'Fecha Terminado', 'Usuario', 'Precio'];
     let workbook;
     let worksheet;
     if (fs.existsSync(filePath)) {
@@ -129,6 +186,7 @@ function guardarPedidoEnExcel(pedido) {
         xlsx.utils.book_append_sheet(workbook, worksheet, 'Pedidos');
     }
     const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+    const precio = obtenerPrecioProducto(pedido.producto, pedido.litros);
     data.push([
         pedido.id_pedido,
         pedido.producto,
@@ -140,7 +198,8 @@ function guardarPedidoEnExcel(pedido) {
         "A Confirmar",                // Estado inicial
         "",                           // Fecha Preparación
         "",                           // Fecha Terminado
-        ""                            // Usuario
+        "",                           // Usuario
+        precio                        // Precio
     ]);
     const newWorksheet = xlsx.utils.aoa_to_sheet(data);
     workbook.Sheets['Pedidos'] = newWorksheet;
@@ -271,9 +330,12 @@ client.on('message', async msg => {
     } else if (pedido.estado === "pedir_nombre") {
         pedido.nombre = msg.body;
         pedido.estado = "finalizado";
+        const precio = obtenerPrecioProducto(pedido.producto, pedido.litros);
+        const precioFormateado = formatearPrecio(precio);
+        console.log(`Producto: ${pedido.producto}, Litros: ${pedido.litros}, Precio: ${precioFormateado}`); // Registro de depuración
         client.sendMessage(chatId, 
             `Para confirmar su pedido pase a abonar en caja.\n\n📝 *Resumen del pedido:*\n` +
-            `🍹 Producto: ${pedido.producto}\n📦 Litros: ${pedido.litros}\n💰 Pago: ${pedido.metodo_pago}\n👤 Cliente: ${pedido.nombre}\n📞 Número: ${pedido.numero_cliente}\n\n` +
+            `🍹 Producto: ${pedido.producto}\n📦 Litros: ${pedido.litros}\n💰 Pago: ${pedido.metodo_pago}\n👤 Cliente: ${pedido.nombre}\n📞 Número: ${pedido.numero_cliente}\n💵 Precio: ${precioFormateado}\n\n` +
             `¡Muchas Gracias!`
         );
         guardarPedidoEnExcel(pedido);
