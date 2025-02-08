@@ -1,6 +1,7 @@
 # Node.js
-.wwwwebjs_auth
-.wwwebjs_cache
+.wwebjs_auth/
+.wwebjs_cache/
+
 node_modules
 npm-debug.log*
 yarn-error.log*
@@ -40,3 +41,5 @@ build/
 
 
 node_modules/
+.wwebjs_auth/
+.wwebjs_cache/
