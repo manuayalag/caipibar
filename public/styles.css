@@ -90,6 +90,12 @@
   .en-preparacion {
     border-left: 4px solid #f1c40f;
   }
+  .a-confirmar {
+    border-left: 4px solid #3498db;
+  }
+  .terminado {
+    border-left: 4px solid #2ecc71;
+  }
   
   /* Responsive: Para pantallas muy pequeñas, se pasa a 1 columna */
   @media (max-width: 500px) {

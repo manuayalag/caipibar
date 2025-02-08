@@ -71,7 +71,7 @@ app.get('/orders', (req, res) => {
 });
 
 // Endpoint: Actualizar el estado de un pedido
-app.post('/orders/:id/status', (req, res) => {
+app.post('/orders/:id/status', async (req, res) => {
     const id = req.params.id;
     const newStatus = req.body.estado; // Ej.: "En Preparación" o "Terminado"
     const updatedBy = req.body.updatedBy;
@@ -89,6 +89,17 @@ app.post('/orders/:id/status', (req, res) => {
     }
     const success = actualizarPedidoEnExcel(id, updatedFields);
     if (success) {
+        if (newStatus === "Terminado") {
+            const workbook = xlsx.readFile('pedidos.xlsx');
+            const worksheet = workbook.Sheets['Pedidos'];
+            const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+            const order = data.find(row => row[0] == id);
+            if (order) {
+                const numeroCliente = order[5];
+                const mensaje = `✅ Su pedido de ${order[1]} (${order[2]} litros) está listo para ser recogido. ¡Gracias por elegir Caipibar! 🍹`;
+                client.sendMessage(`${numeroCliente}@c.us`, mensaje);
+            }
+        }
         res.json({ success: true });
     } else {
         res.status(404).json({ error: "Pedido no encontrado" });
@@ -126,7 +137,7 @@ function guardarPedidoEnExcel(pedido) {
         pedido.nombre,
         pedido.numero_cliente,
         new Date().toLocaleString(),  // Fecha Pedido
-        "Pendiente",                  // Estado
+        "A Confirmar",                // Estado inicial
         "",                           // Fecha Preparación
         "",                           // Fecha Terminado
         ""                            // Usuario
@@ -212,6 +223,9 @@ const pedidos = {};
 client.on('message', async msg => {
     // Ignorar mensajes de grupos
     if (msg.isGroupMsg) return;
+
+    // Ignorar mensajes que contienen medios (fotos, videos, etc.)
+    if (msg.hasMedia) return;
     
     const chatId = msg.from;
     const phoneNumber = chatId.split('@')[0]; // Extraer solo el número de teléfono
@@ -258,9 +272,9 @@ client.on('message', async msg => {
         pedido.nombre = msg.body;
         pedido.estado = "finalizado";
         client.sendMessage(chatId, 
-            `✅ ¡Pedido confirmado!\n\n📝 *Resumen del pedido:*\n` +
-            `🍹 Producto: ${pedido.producto}\n📦 Cantidad: ${pedido.litros}\n💰 Pago: ${pedido.metodo_pago}\n👤 Cliente: ${pedido.nombre}\n📞 Número: ${pedido.numero_cliente}\n\n` +
-            `Puede pasar a abonar al retirar su pedido. ¡Gracias por elegir Caipibar! 🍹`
+            `Para confirmar su pedido pase a abonar en caja.\n\n📝 *Resumen del pedido:*\n` +
+            `🍹 Producto: ${pedido.producto}\n📦 Litros: ${pedido.litros}\n💰 Pago: ${pedido.metodo_pago}\n👤 Cliente: ${pedido.nombre}\n📞 Número: ${pedido.numero_cliente}\n\n` +
+            `¡Muchas Gracias!`
         );
         guardarPedidoEnExcel(pedido);
         delete pedidos[chatId]; // Resetear el flujo del pedido para ese chat

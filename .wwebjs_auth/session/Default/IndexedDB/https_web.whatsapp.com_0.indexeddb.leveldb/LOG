@@ -1,0 +1,28 @@
+2025/02/08-19:40:33.723 2a1c Reusing MANIFEST C:\Users\acer\Desktop\caipibar\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/02/08-19:40:33.724 2a1c Recovering log #102
+2025/02/08-19:40:33.777 2a1c Reusing old log C:\Users\acer\Desktop\caipibar\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000102.log 
+2025/02/08-19:40:35.925 45b0 Manual compaction at level-0 from '\x00%\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00&\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/02/08-19:40:35.931 4624 Level-0 table #108: started
+2025/02/08-19:40:35.947 4624 Level-0 table #108: 361478 bytes OK
+2025/02/08-19:40:35.950 4624 Delete type=0 #102
+2025/02/08-19:40:35.950 4624 Manual compaction at level-0 from '\x00&\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00'\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/02/08-19:40:38.797 4624 Compacting 1@1 + 2@2 files
+2025/02/08-19:40:38.998 4624 Generated table #109@1: 48101 keys, 2212523 bytes
+2025/02/08-19:40:39.109 4624 Generated table #110@1: 28861 keys, 982887 bytes
+2025/02/08-19:40:39.109 4624 Compacted 1@1 + 2@2 files => 3195410 bytes
+2025/02/08-19:40:39.115 4624 compacted to: files[ 0 0 2 0 0 0 0 ]
+2025/02/08-19:40:39.116 4624 Delete type=2 #104
+2025/02/08-19:40:39.116 4624 Delete type=2 #105
+2025/02/08-19:40:39.116 4624 Delete type=2 #108
+2025/02/08-19:45:41.225 2f8c Level-0 table #112: started
+2025/02/08-19:45:41.243 2f8c Level-0 table #112: 440660 bytes OK
+2025/02/08-19:45:41.244 2f8c Delete type=0 #107
+2025/02/08-19:45:41.244 2f8c Manual compaction at level-0 from '\x00(\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00)\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/02/08-19:45:46.248 4548 Compacting 1@1 + 2@2 files
+2025/02/08-19:45:46.357 4548 Generated table #113@1: 49395 keys, 2214315 bytes
+2025/02/08-19:45:46.414 4548 Generated table #114@1: 29393 keys, 1053896 bytes
+2025/02/08-19:45:46.414 4548 Compacted 1@1 + 2@2 files => 3268211 bytes
+2025/02/08-19:45:46.416 4548 compacted to: files[ 0 0 2 0 0 0 0 ]
+2025/02/08-19:45:46.417 4548 Delete type=2 #109
+2025/02/08-19:45:46.417 4548 Delete type=2 #110
+2025/02/08-19:45:46.417 4548 Delete type=2 #112
