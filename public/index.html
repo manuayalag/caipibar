@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Caipibar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Vincula el CSS -->
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Dashboard de Pedidos Caipibar</h1>
+  </header>
+  <div class="login-container" id="loginContainer">
+    <h2>Iniciar Sesión</h2>
+    <input type="text" id="username" placeholder="Usuario">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button onclick="login()">Ingresar</button>
+  </div>
+  <div class="grid-container" id="ordersGrid" style="display: none;"></div>
+  <script>
+    const productImages = {
+      "Caipirinha": "/images/caipirinha.png",
+      "Caipiboom": "/images/caipiboom.png",
+      "Caipiruva": "/images/caipiruva.png"
+    };
+
+    let currentUser = null;
+
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      fetch('http://192.168.0.8:3000/login', { // Ensure the URL matches your server address and port
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          currentUser = data.user;
+          document.getElementById('loginContainer').style.display = 'none';
+          document.getElementById('ordersGrid').style.display = 'grid';
+          loadOrders();
+          setInterval(loadOrders, 2000);
+        } else {
+          alert('Credenciales incorrectas');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error al intentar conectar con el servidor');
+      });
+    }
+
+    async function loadOrders() {
+      const response = await fetch('/orders');
+      const orders = await response.json();
+      const grid = document.querySelector('#ordersGrid');
+      grid.innerHTML = '';
+      orders
+        .filter(order => order.estado === "Pendiente" || order.estado === "En Preparación")
+        .sort((a, b) => new Date(a.fecha_pedido) - new Date(b.fecha_pedido))
+        .forEach(order => {
+          const div = document.createElement('div');
+          div.className = `grid-item ${order.estado === "Pendiente" ? 'pendiente' : 'en-preparacion'}`;
+          div.innerHTML = `
+            <img src="${productImages[order.producto]}" alt="${order.producto}">
+            <h3>${order.producto}</h3>
+            <p><strong>Litros:</strong> ${order.litros}</p>
+            <p><strong>Cliente:</strong> ${order.nombre}</p>
+            <p><strong>Estado:</strong> ${order.estado}</p>
+            <button onclick="updateStatus('${order.id}', 'En Preparación')">Preparar</button>
+            <button onclick="updateStatus('${order.id}', 'Terminado')">Terminar</button>
+          `;
+          grid.appendChild(div);
+        });
+    }
+    
+    async function updateStatus(id, newStatus) {
+      const response = await fetch(`/orders/${id}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: newStatus, updatedBy: currentUser, usuario: document.getElementById('username').value })
+      });
+      if (response.ok) {
+        loadOrders();
+      } else {
+        alert('Error al actualizar el estado');
+      }
+    }
+  </script>
+</body>
+</html>

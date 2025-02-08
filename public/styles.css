@@ -1,0 +1,133 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Estilos generales */
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+  
+  /* Header */
+  header {
+    background-color: #ff6347;
+    padding: 15px;
+    text-align: center;
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+  
+  /* Contenedor de la cuadrícula: 2 columnas fijas */
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  /* Tarjeta individual */
+  .grid-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    font-size: 0.9em;
+  }
+  .grid-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  
+  /* Imagen ajustada y centrada */
+  .grid-item img {
+    width: 100%;
+    max-width: 120px;
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover;
+    margin: 0 auto 10px;
+    display: block;
+  }
+  
+  /* Título y párrafos */
+  .grid-item h3 {
+    margin: 8px 0;
+    font-size: 1.1em;
+  }
+  .grid-item p {
+    margin: 5px 0;
+    font-size: 0.85em;
+  }
+  
+  /* Botones */
+  .grid-item button {
+    background-color: #ff6347;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    cursor: pointer;
+    margin: 5px 0;
+    transition: background-color 0.3s ease;
+    width: 100%;
+  }
+  .grid-item button:hover {
+    background-color: #e5533d;
+  }
+  
+  /* Indicadores de estado */
+  .pendiente {
+    border-left: 4px solid #e74c3c;
+  }
+  .en-preparacion {
+    border-left: 4px solid #f1c40f;
+  }
+  
+  /* Responsive: Para pantallas muy pequeñas, se pasa a 1 columna */
+  @media (max-width: 500px) {
+    .grid-container {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Login Form */
+  .login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .login-container h2 {
+    margin-bottom: 20px;
+  }
+  .login-container input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .login-container button {
+    background-color: #ff6347;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .login-container button:hover {
+    background-color: #e5533d;
+  }
