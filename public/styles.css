@@ -96,6 +96,18 @@
   .terminado {
     border-left: 4px solid #2ecc71;
   }
+  .cortar-macerar {
+    border-left: 4px solid #8e44ad;
+  }
+  .dosificar {
+    border-left: 4px solid #2980b9;
+  }
+  .coctelera {
+    border-left: 4px solid #27ae60;
+  }
+  .garnish {
+    border-left: 4px solid #f39c12;
+  }
   
   /* Responsive: Para pantallas muy pequeñas, se pasa a 1 columna */
   @media (max-width: 500px) {

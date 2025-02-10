@@ -59,29 +59,42 @@
       const grid = document.querySelector('#ordersGrid');
       grid.innerHTML = '';
       orders
-        .filter(order => (order.estado === "Pendiente" || order.estado === "En Preparación") && (order.estado !== "En Preparación" || order.usuario === currentUser))
+        .filter(order => {
+          if (currentUser === 'cortar_macerar') return order.estado === 'cortar/macerar';
+          if (currentUser === 'dosificar') return order.estado === 'dosificar';
+          if (currentUser === 'coctelera') return order.estado === 'coctelera';
+          if (currentUser === 'garnish') return order.estado === 'garnish';
+          return order.estado === 'A Confirmar' || order.estado === 'Terminado';
+        })
         .sort((a, b) => new Date(a.fecha_pedido) - new Date(b.fecha_pedido))
         .forEach(order => {
           const div = document.createElement('div');
-          div.className = `grid-item ${order.estado === "Pendiente" ? 'pendiente' : 'en-preparacion'}`;
+          div.className = `grid-item ${order.estado.replace('/', '-')}`;
           div.innerHTML = `
             <img src="${productImages[order.producto]}" alt="${order.producto}">
             <h3>${order.producto}</h3>
             <p><strong>Litros:</strong> ${order.litros}</p>
             <p><strong>Cliente:</strong> ${order.nombre}</p>
-            <p><strong>Estado:</strong> ${order.estado === "En Preparación" && order.usuario === currentUser ? 'En Progreso' : order.estado}</p>
-            <button onclick="updateStatus('${order.id}', 'En Preparación')">Preparar</button>
-            <button onclick="updateStatus('${order.id}', 'Terminado')">Terminar</button>
+            <p><strong>Estado:</strong> ${order.estado}</p>
+            ${currentUser !== 'pamela' ? `<button onclick="updateStatus('${order.id}', '${getNextStatus(order.estado)}')">${currentUser === 'garnish' ? 'Terminar' : 'Siguiente'}</button>` : ''}
           `;
           grid.appendChild(div);
         });
     }
-    
+
+    function getNextStatus(currentStatus) {
+      if (currentStatus === 'A Confirmar') return 'cortar/macerar';
+      if (currentStatus === 'cortar/macerar') return 'dosificar';
+      if (currentStatus === 'dosificar') return 'coctelera';
+      if (currentStatus === 'coctelera') return 'garnish';
+      return 'Terminado';
+    }
+
     async function updateStatus(id, newStatus) {
       const response = await fetch(`/orders/${id}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: newStatus, updatedBy: currentUser, usuario: document.getElementById('username').value })
+        body: JSON.stringify({ estado: newStatus, updatedBy: currentUser })
       });
       if (response.ok) {
         loadOrders();

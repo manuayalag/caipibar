@@ -25,7 +25,7 @@
       const grid = document.querySelector('#ordersGrid');
       grid.innerHTML = '';
       orders
-        .filter(order => order.estado === "A Confirmar")
+        .filter(order => order.estado === "A Confirmar" || order.estado === "Terminado")
         .sort((a, b) => new Date(a.fecha_pedido) - new Date(b.fecha_pedido))
         .forEach(order => {
           const div = document.createElement('div');
@@ -36,7 +36,7 @@
             <p><strong>Litros:</strong> ${order.litros}</p>
             <p><strong>Cliente:</strong> ${order.nombre}</p>
             <p><strong>Estado:</strong> ${order.estado}</p>
-            <button onclick="updateStatus('${order.id}', 'Pendiente')">Confirmar</button>
+            ${order.estado === "A Confirmar" ? `<button onclick="updateStatus('${order.id}', 'cortar/macerar')">Confirmar</button>` : ''}
           `;
           grid.appendChild(div);
         });
@@ -46,7 +46,7 @@
       const response = await fetch(`/orders/${id}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: newStatus, updatedBy: 'Pame' })
+        body: JSON.stringify({ estado: newStatus, updatedBy: 'pamela' })
       });
       if (response.ok) {
         loadOrders();

@@ -73,7 +73,7 @@ app.get('/orders', (req, res) => {
 // Endpoint: Actualizar el estado de un pedido
 app.post('/orders/:id/status', async (req, res) => {
     const id = req.params.id;
-    const newStatus = req.body.estado; // Ej.: "En Preparación" o "Terminado"
+    const newStatus = req.body.estado; // Ej.: "cortar/macerar", "dosificar", "coctelera", "garnish", "Terminado"
     const updatedBy = req.body.updatedBy;
     if (!newStatus || !updatedBy) {
         return res.status(400).json({ error: "No se especificó el nuevo estado o el usuario" });
@@ -81,8 +81,20 @@ app.post('/orders/:id/status', async (req, res) => {
     const updatedFields = {};
     updatedFields.Estado = newStatus;
     updatedFields["Actualizado Por"] = updatedBy;
-    if (newStatus === "En Preparación") {
-        updatedFields["Fecha Preparación"] = new Date().toLocaleString();
+    if (newStatus === "A Confirmar") {
+        updatedFields["Fecha A Confirmar"] = new Date().toLocaleString();
+    }
+    if (newStatus === "cortar/macerar") {
+        updatedFields["Fecha Cortar/Macerar"] = new Date().toLocaleString();
+    }
+    if (newStatus === "dosificar") {
+        updatedFields["Fecha Dosificar"] = new Date().toLocaleString();
+    }
+    if (newStatus === "coctelera") {
+        updatedFields["Fecha Coctelera"] = new Date().toLocaleString();
+    }
+    if (newStatus === "garnish") {
+        updatedFields["Fecha Garnish"] = new Date().toLocaleString();
     }
     if (newStatus === "Terminado") {
         updatedFields["Fecha Terminado"] = new Date().toLocaleString();
@@ -96,7 +108,7 @@ app.post('/orders/:id/status', async (req, res) => {
             const order = data.find(row => row[0] == id);
             if (order) {
                 const numeroCliente = order[5];
-                const mensaje = `✅ Su pedido de ${order[1]} (${order[2]} litros) está listo para ser recogido. ¡Gracias por elegir Caipibar! 🍹`;
+                const mensaje = `✅ Su pedido de ${order[1]} (${order[2]}) está listo para ser recogido. ¡Gracias por elegir Caipibar! 🍹`;
                 client.sendMessage(`${numeroCliente}@c.us`, mensaje);
             }
         }
@@ -119,12 +131,12 @@ function inicializarHojaProductos() {
     const filePath = 'pedidos.xlsx';
     const productos = [
         ['id_producto', 'producto', 'precio'],
-        [1, 'caipirinha 1 litro', 25000],
-        [2, 'caipirinha 2 litros', 50000],
-        [3, 'caipiruva 1 litro', 25000],
-        [4, 'caipiruva 2 litros', 50000],
-        [5, 'caipiboom 1 litro', 30000],
-        [6, 'caipiboom 2 litros', 60000]
+        [1, 'caipirinha 1 litro(s)', 25000],
+        [2, 'caipirinha 2 litro(s)', 50000],
+        [3, 'caipiruva 1 litro(s)', 25000],
+        [4, 'caipiruva 2 litro(s)', 50000],
+        [5, 'caipiboom 1 litro(s)', 30000],
+        [6, 'caipiboom 2 litro(s)', 60000]
     ];
     let workbook;
     if (fs.existsSync(filePath)) {
@@ -144,6 +156,36 @@ function inicializarHojaProductos() {
 
 // Llamar a la función para inicializar la hoja de productos
 inicializarHojaProductos();
+
+// Función para inicializar la hoja de usuarios
+function inicializarHojaUsuarios() {
+    const filePath = 'pedidos.xlsx';
+    const usuarios = [
+        ['id', 'username', 'password'],
+        [1, 'cortar_macerar', '123456'],
+        [2, 'dosificar', '123456'],
+        [3, 'coctelera', '123456'],
+        [4, 'garnish', '123456'],
+        [5, 'pamela', '123456']
+    ];
+    let workbook;
+    if (fs.existsSync(filePath)) {
+        workbook = xlsx.readFile(filePath);
+        if (workbook.Sheets['Usuarios']) {
+            console.log('✅ La hoja de usuarios ya existe en pedidos.xlsx');
+            return;
+        }
+    } else {
+        workbook = xlsx.utils.book_new();
+    }
+    const worksheet = xlsx.utils.aoa_to_sheet(usuarios);
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Usuarios');
+    xlsx.writeFile(workbook, filePath);
+    console.log('✅ Hoja de usuarios inicializada en pedidos.xlsx');
+}
+
+// Llamar a la función para inicializar la hoja de usuarios
+inicializarHojaUsuarios();
 
 // Función para obtener el precio del producto
 function obtenerPrecioProducto(producto, litros) {
@@ -174,12 +216,20 @@ function formatearPrecio(precio) {
 // Función para guardar un pedido nuevo en Excel
 function guardarPedidoEnExcel(pedido) {
     const filePath = 'pedidos.xlsx';
-    const HEADER = ['ID Pedido', 'Producto', 'Litros', 'Método de Pago', 'Nombre', 'Número de Cliente', 'Fecha Pedido', 'Estado', 'Fecha Preparación', 'Fecha Terminado', 'Usuario', 'Precio'];
+    const HEADER = [
+        'ID Pedido', 'Producto', 'Litros', 'Método de Pago', 'Nombre', 'Número de Cliente', 
+        'Fecha Pedido', 'Estado', 'Fecha A Confirmar', 'Fecha Cortar/Macerar', 
+        'Fecha Dosificar', 'Fecha Coctelera', 'Fecha Garnish', 'Fecha Terminado', 'Usuario', 'Precio'
+    ];
     let workbook;
     let worksheet;
     if (fs.existsSync(filePath)) {
         workbook = xlsx.readFile(filePath);
         worksheet = workbook.Sheets['Pedidos'];
+        if (!worksheet) {
+            worksheet = xlsx.utils.aoa_to_sheet([HEADER]);
+            xlsx.utils.book_append_sheet(workbook, worksheet, 'Pedidos');
+        }
     } else {
         workbook = xlsx.utils.book_new();
         worksheet = xlsx.utils.aoa_to_sheet([HEADER]);
@@ -196,7 +246,11 @@ function guardarPedidoEnExcel(pedido) {
         pedido.numero_cliente,
         new Date().toLocaleString(),  // Fecha Pedido
         "A Confirmar",                // Estado inicial
-        "",                           // Fecha Preparación
+        new Date().toLocaleString(),  // Fecha A Confirmar
+        "",                           // Fecha Cortar/Macerar
+        "",                           // Fecha Dosificar
+        "",                           // Fecha Coctelera
+        "",                           // Fecha Garnish
         "",                           // Fecha Terminado
         "",                           // Usuario
         precio                        // Precio
@@ -225,9 +279,25 @@ function actualizarPedidoEnExcel(id, updatedFields) {
                 const colIndex = header.indexOf("Estado");
                 data[i][colIndex] = updatedFields.Estado;
             }
-            if (updatedFields["Fecha Preparación"]) {
-                const colIndex = header.indexOf("Fecha Preparación");
-                data[i][colIndex] = updatedFields["Fecha Preparación"];
+            if (updatedFields["Fecha A Confirmar"]) {
+                const colIndex = header.indexOf("Fecha A Confirmar");
+                data[i][colIndex] = updatedFields["Fecha A Confirmar"];
+            }
+            if (updatedFields["Fecha Cortar/Macerar"]) {
+                const colIndex = header.indexOf("Fecha Cortar/Macerar");
+                data[i][colIndex] = updatedFields["Fecha Cortar/Macerar"];
+            }
+            if (updatedFields["Fecha Dosificar"]) {
+                const colIndex = header.indexOf("Fecha Dosificar");
+                data[i][colIndex] = updatedFields["Fecha Dosificar"];
+            }
+            if (updatedFields["Fecha Coctelera"]) {
+                const colIndex = header.indexOf("Fecha Coctelera");
+                data[i][colIndex] = updatedFields["Fecha Coctelera"];
+            }
+            if (updatedFields["Fecha Garnish"]) {
+                const colIndex = header.indexOf("Fecha Garnish");
+                data[i][colIndex] = updatedFields["Fecha Garnish"];
             }
             if (updatedFields["Fecha Terminado"]) {
                 const colIndex = header.indexOf("Fecha Terminado");
